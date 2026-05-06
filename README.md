@@ -1,47 +1,78 @@
-# MeetFlow — AI Meeting Intelligence
+# MeetFlow
 
-> **Privacy-first desktop app for meeting capture, transcription and AI analysis.**
-> Ultra-dark premium design · Local Whisper models · AI Agent Executor · 25+ integrations
+> **Privacy-first AI meeting intelligence for your desktop.**
+> Record, transcribe and summarize meetings 100% locally. No cloud unless you choose.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Status](https://img.shields.io/badge/status-pre--alpha-red.svg)](#status)
+![Platform](https://img.shields.io/badge/platform-windows-blue.svg)
 
 ---
 
-## 🚀 Status: Pre-development
+## Status
 
-This repository contains the **master plan** for building MeetFlow from scratch.
-The actual app development starts in a fresh session using this plan as the specification.
+**Pre-alpha — under active construction.** First public release (`v0.1.0`) is being built.
+See [CHANGELOG.md](./CHANGELOG.md) for progress.
 
-## 📋 Master Plan
+## What is MeetFlow
 
-Read [`MEETFLOW_MASTER_PLAN.md`](./MEETFLOW_MASTER_PLAN.md) — the complete specification document for building the app, including:
+A desktop app for professionals who run ≥5 meetings/week and want a private,
+organized and actionable record of every one. It captures audio, transcribes
+locally with Whisper, and generates AI summaries — without sending your data
+to anyone unless you explicitly configure a cloud provider.
 
-- Research phase (competitors, features, integrations)
-- Tech stack decisions (Tauri v2 + Rust + Next.js 14 + FastAPI)
-- Full design system (Ultra-dark premium, Linear.app inspired)
-- Feature specifications (Recording, Transcription, AI Analysis, OAuth Integrations)
-- AI Agent Executor — post-meeting task automation with Claude/GPT-4 tool use
-- 25+ integrations roadmap (Google, Microsoft, Notion, Slack, Linear, n8n, HubSpot...)
-- `.claude/` workspace setup (commands, hooks, settings)
-- Development phases + testing strategy + GitHub CI/CD
+## Features (v0.1 MVP)
 
-## 🛠 Tech Stack
+- 🎙 **Record meetings** — microphone + system audio simultaneously
+- 📝 **Local transcription** — whisper.cpp with downloadable models (tiny / small / medium / large-v3-turbo)
+- 🧠 **AI summaries** — local Ollama or your own Claude / OpenAI / Groq API key
+- 📋 **Action items extraction** — auto-detected from transcript
+- 📓 **Block-based notes editor** — write alongside the transcript (BlockNote)
+- 📤 **Export** — Markdown, PDF, JSON
+- 🌍 **Multi-language UI** — English + Spanish from day one
+- 🌑 **Ultra-dark premium design** — Linear/Vercel-inspired, no generic gray dashboards
+
+## Coming in v0.2
+
+- Speaker diarization (sherpa-onnx, fully local)
+- Google Calendar / Drive / Docs integration
+- Notion + Slack export
+- AI Agent Executor — post-meeting automation with Claude tool use
+
+## Tech stack
 
 | Layer | Technology |
-|-------|-----------|
+|---|---|
 | Desktop shell | Tauri v2 (Rust) |
-| Frontend | Next.js 14 + TypeScript + shadcn/ui |
-| Transcription | whisper.cpp (local, via whisper-rs) |
-| Backend | FastAPI (Python 3.11) + SQLite |
-| LLM | Ollama (local) / Claude / OpenAI / Groq / OpenRouter |
-| Build | NSIS (.exe) + DMG |
+| Frontend | Next.js 14 + TypeScript 5 + shadcn/ui + Tailwind |
+| Audio capture | cpal + WASAPI loopback |
+| Transcription | whisper-rs (whisper.cpp bindings) |
+| LLM clients | reqwest (Rust) → Ollama / Claude / OpenAI / Groq / OpenRouter |
+| Database | SQLite (rusqlite) |
+| Build | NSIS installer (.exe) via Tauri CLI |
 
-## 🔐 Privacy
+No Python runtime, no Node.js sidecar at runtime. Single ~25 MB installer.
 
-All audio and transcripts stay on your device. No data sent to the cloud unless you explicitly configure a cloud LLM provider.
+## Privacy
 
-## 📄 License
+All audio, transcripts and notes stay in `%APPDATA%\MeetFlow\` on your machine.
+We do not operate a server and do not collect any telemetry.
 
-MIT — Open Source
+If you choose to use a cloud LLM (Claude, OpenAI…) for summaries, only the
+transcript text is sent to that provider — never the audio. See [PRIVACY.md](./PRIVACY.md).
 
----
+## Install
 
-*Generated plan: 2026-04-24*
+_GitHub Releases will be published once `v0.1.0` ships._
+
+## Build from source
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## License
+
+[MIT](./LICENSE) — open source forever.
+
+## Contact
+
+Open an issue: https://github.com/JonatanGhub/MEETFLOW-AI_MEETING_NOTES/issues
