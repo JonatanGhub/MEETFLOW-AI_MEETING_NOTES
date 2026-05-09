@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "MeetFlow",
+  "version": "0.1.0",
+  "identifier": "com.meetflow.app",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "MeetFlow",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1024,
+        "minHeight": 680,
+        "decorations": true,
+        "resizable": true,
+        "center": true,
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
+    "copyright": "© 2026 MeetFlow",
+    "category": "Productivity",
+    "shortDescription": "Privacy-first AI meeting notes",
+    "longDescription": "Record, transcribe and summarize meetings 100% locally.",
+    "windows": {
+      "wix": {
+        "language": "en-US"
+      },
+      "nsis": {
+        "languages": ["English", "Spanish"],
+        "displayLanguageSelector": false
+      }
+    }
+  }
+}

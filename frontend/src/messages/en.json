@@ -1,0 +1,312 @@
+{
+  "common": {
+    "app": {
+      "name": "MeetFlow",
+      "tagline": "Your meetings. Your data. Your control."
+    },
+    "button": {
+      "continue": "Continue",
+      "back": "Back",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close",
+      "confirm": "Confirm",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "download": "Download",
+      "export": "Export",
+      "copy": "Copy",
+      "retry": "Retry",
+      "skip": "Skip for now"
+    },
+    "status": {
+      "loading": "Loading...",
+      "saving": "Saving...",
+      "error": "Something went wrong",
+      "success": "Done"
+    }
+  },
+  "navigation": {
+    "record": "Record",
+    "meetings": "Meetings",
+    "analytics": "Analytics",
+    "integrations": "Integrations",
+    "settings": "Settings",
+    "help": "Help & Docs"
+  },
+  "onboarding": {
+    "step": "Step {current} of {total}",
+    "welcome": {
+      "title": "Your meetings. Your data. Your control.",
+      "subtitle": "MeetFlow records, transcribes and summarizes your meetings — 100% on your device.",
+      "features": {
+        "privacy": {
+          "title": "Privacy-first",
+          "description": "Audio and transcripts never leave your computer"
+        },
+        "ai": {
+          "title": "AI-powered",
+          "description": "Summaries, action items and insights automatically"
+        },
+        "offline": {
+          "title": "Works offline",
+          "description": "No internet required for recording and transcription"
+        }
+      },
+      "cta": "Get started"
+    },
+    "permissions": {
+      "title": "Microphone access",
+      "subtitle": "MeetFlow needs access to your microphone to record meetings.",
+      "microphone": {
+        "label": "Microphone",
+        "description": "Capture your voice and participants",
+        "granted": "Granted",
+        "denied": "Denied — check Windows Settings"
+      },
+      "system_audio": {
+        "label": "System audio",
+        "description": "Capture audio from calls (Zoom, Teams, Meet…)",
+        "note": "Windows: WASAPI loopback, no special permission needed"
+      },
+      "test": {
+        "label": "Test microphone",
+        "speaking": "Listening…",
+        "tip": "Say something to verify your mic is working"
+      }
+    },
+    "model": {
+      "title": "Choose your transcription model",
+      "subtitle": "Whisper models run 100% locally. Download once, use forever.",
+      "badges": {
+        "recommended": "Recommended",
+        "best_value": "Best value"
+      },
+      "speed": {
+        "label": "Speed",
+        "lightning": "Lightning fast",
+        "fast": "Fast",
+        "medium": "Medium",
+        "slow": "Slow"
+      },
+      "accuracy": {
+        "label": "Accuracy",
+        "basic": "Basic",
+        "good": "Good",
+        "high": "High",
+        "best": "Best"
+      },
+      "size": "{size} MB",
+      "download": {
+        "start": "Download",
+        "downloading": "Downloading… {percent}%",
+        "verifying": "Verifying…",
+        "done": "Ready",
+        "error": "Download failed — retry"
+      },
+      "models": {
+        "tiny": {
+          "name": "Tiny",
+          "description": "Fastest, basic accuracy. Good for quick notes."
+        },
+        "small": {
+          "name": "Small",
+          "description": "Great balance of speed and quality."
+        },
+        "medium": {
+          "name": "Medium",
+          "description": "High accuracy, moderate speed."
+        },
+        "large": {
+          "name": "Large v3 Turbo",
+          "description": "Best accuracy, optimized for speed."
+        }
+      }
+    },
+    "ai_provider": {
+      "title": "Set up AI summaries",
+      "subtitle": "Choose how MeetFlow generates summaries and action items.",
+      "modes": {
+        "local": {
+          "label": "Local Ollama",
+          "description": "100% private — no data leaves your network",
+          "detecting": "Detecting Ollama…",
+          "detected": "Ollama detected",
+          "not_found": "Ollama not found",
+          "install_prompt": "Don't have Ollama?",
+          "install_cta": "Install Ollama →",
+          "models_label": "Choose model",
+          "remote": {
+            "label": "Ollama on my network",
+            "host_label": "Host",
+            "host_placeholder": "192.168.1.50 or my-server.local",
+            "port_label": "Port",
+            "test": "Test connection"
+          }
+        },
+        "cloud": {
+          "label": "Cloud API (your key)",
+          "description": "Transcripts are sent to the provider you choose",
+          "providers": {
+            "anthropic": "Anthropic Claude",
+            "openai": "OpenAI",
+            "groq": "Groq (free tier, fast)",
+            "openrouter": "OpenRouter (200+ models)",
+            "mistral": "Mistral AI"
+          },
+          "api_key_label": "API Key",
+          "api_key_placeholder": "sk-…",
+          "get_key": "Get API key →",
+          "model_label": "Model",
+          "test": "Test connection",
+          "testing": "Testing…",
+          "ok": "Connected",
+          "failed": "Failed — check your key"
+        },
+        "custom": {
+          "label": "Custom endpoint",
+          "description": "LM Studio, vLLM, LocalAI, Jan, etc.",
+          "url_label": "Base URL",
+          "url_placeholder": "http://localhost:1234/v1",
+          "key_label": "API Key (optional)",
+          "model_label": "Model name",
+          "test": "Test connection"
+        }
+      }
+    }
+  },
+  "recording": {
+    "button": {
+      "start": "Start recording",
+      "stop": "Stop recording",
+      "pause": "Pause",
+      "resume": "Resume"
+    },
+    "status": {
+      "idle": "Ready to record",
+      "recording": "Recording",
+      "paused": "Paused",
+      "stopping": "Processing…",
+      "error": "Recording error"
+    },
+    "duration": "{hours}:{minutes}:{seconds}",
+    "transcript": {
+      "label": "Live transcript",
+      "placeholder": "Transcript will appear here as you speak…",
+      "language_detected": "Detected: {language}"
+    },
+    "meeting_name": {
+      "label": "Meeting name",
+      "placeholder": "e.g. Weekly standup · Q2 Planning"
+    },
+    "saved": "Meeting saved"
+  },
+  "meetings": {
+    "title": "Meetings",
+    "empty": {
+      "title": "No meetings yet",
+      "description": "Start recording to capture your first meeting.",
+      "cta": "Start recording"
+    },
+    "search": {
+      "placeholder": "Search meetings, transcripts, notes…"
+    },
+    "card": {
+      "duration": "{duration}",
+      "score": "Score: {score}",
+      "action_items": "{count} action items"
+    },
+    "detail": {
+      "tabs": {
+        "transcript": "Transcript",
+        "notes": "Notes",
+        "summary": "AI Summary",
+        "actions": "Action Items",
+        "export": "Export"
+      },
+      "summary": {
+        "generating": "Generating summary…",
+        "generate": "Generate summary",
+        "empty": "No summary yet. Click to generate.",
+        "executive": "Summary",
+        "action_items": "Action Items",
+        "topics": "Topics",
+        "sentiment": "Sentiment",
+        "score": "Meeting score"
+      },
+      "notes": {
+        "placeholder": "Write meeting notes here…",
+        "autosaved": "Saved"
+      },
+      "export": {
+        "markdown": "Export as Markdown",
+        "pdf": "Export as PDF",
+        "json": "Export as JSON"
+      }
+    },
+    "delete": {
+      "title": "Delete meeting",
+      "description": "This will permanently delete the meeting, transcript and notes. This cannot be undone.",
+      "confirm": "Delete"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "tabs": {
+      "general": "General",
+      "audio": "Audio",
+      "transcription": "Transcription",
+      "ai": "AI & Summaries",
+      "privacy": "Privacy",
+      "about": "About"
+    },
+    "general": {
+      "language": "Interface language",
+      "theme": "Theme",
+      "themes": {
+        "dark": "Dark",
+        "light": "Light",
+        "system": "Follow system"
+      },
+      "startup": "Launch at startup"
+    },
+    "audio": {
+      "microphone": "Microphone",
+      "system_audio": "System audio",
+      "test": "Test audio",
+      "gain": "Input gain"
+    },
+    "transcription": {
+      "model": "Active model",
+      "language": "Language",
+      "auto_detect": "Auto-detect",
+      "download_models": "Manage models"
+    },
+    "ai": {
+      "provider": "Summary provider",
+      "model": "Model",
+      "temperature": "Temperature",
+      "test": "Test connection"
+    },
+    "privacy": {
+      "data_location": "Data location",
+      "open_folder": "Open folder",
+      "export_all": "Export all my data",
+      "delete_all": {
+        "label": "Delete all data",
+        "confirm_title": "Delete all data?",
+        "confirm_description": "This will permanently delete all meetings, transcripts, notes and settings. There is no undo.",
+        "confirm_button": "Delete everything"
+      }
+    },
+    "about": {
+      "version": "Version {version}",
+      "license": "MIT License — Open Source",
+      "github": "View on GitHub",
+      "report_bug": "Report a bug",
+      "changelog": "Changelog"
+    }
+  }
+}

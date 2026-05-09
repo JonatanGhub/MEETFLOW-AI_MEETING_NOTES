@@ -1,0 +1,296 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import {
+  FolderOpen,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  ExternalLink,
+  Github,
+  Info,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  getSetting,
+  setSetting,
+  getAppDataDir,
+  deleteAllData,
+  testLlmConnection,
+  listOllamaModels,
+  type LlmConfig,
+  type LlmProvider,
+  defaultLlmConfig,
+} from "@/lib/tauri";
+import { toast } from "sonner";
+
+export default function SettingsPage() {
+  const t = useTranslations("settings");
+  const [tab, setTab] = useState("ai");
+  const [dataDir, setDataDir] = useState<string | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [llmConfig, setLlmConfig] = useState<LlmConfig>(defaultLlmConfig());
+  const [testState, setTestState] = useState<"idle" | "testing" | "ok" | "failed">("idle");
+  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
+
+  useEffect(() => {
+    getAppDataDir().then(setDataDir).catch(() => {});
+    getSetting("llm_config")
+      .then((raw) => {
+        if (raw) setLlmConfig(JSON.parse(raw) as LlmConfig);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (llmConfig.provider === "ollama") {
+      listOllamaModels(llmConfig.baseUrl ?? undefined)
+        .then(setOllamaModels)
+        .catch(() => setOllamaModels([]));
+    }
+  }, [llmConfig.provider, llmConfig.baseUrl]);
+
+  const saveConfig = async (updated: LlmConfig) => {
+    setLlmConfig(updated);
+    await setSetting("llm_config", JSON.stringify(updated)).catch(() => {});
+  };
+
+  const handleTest = async () => {
+    setTestState("testing");
+    try {
+      await testLlmConnection(llmConfig);
+      setTestState("ok");
+    } catch {
+      setTestState("failed");
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    setDeleting(true);
+    try {
+      await deleteAllData();
+      toast.success("All data deleted");
+      setDeleteDialog(false);
+    } catch (e) {
+      toast.error(`Failed to delete data: ${e}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const CLOUD_PROVIDERS: { value: LlmProvider; label: string; models: string[] }[] = [
+    { value: "claude", label: "Anthropic Claude", models: ["claude-opus-4-5", "claude-sonnet-4-5", "claude-haiku-3-5"] },
+    { value: "open_ai", label: "OpenAI", models: ["gpt-4o", "gpt-4o-mini"] },
+    { value: "groq", label: "Groq", models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"] },
+    { value: "open_router", label: "OpenRouter", models: ["openai/gpt-4o", "anthropic/claude-3.5-sonnet"] },
+    { value: "mistral", label: "Mistral AI", models: ["mistral-large-latest", "mistral-small-latest"] },
+    { value: "ollama", label: "Local Ollama", models: ollamaModels },
+    { value: "custom", label: "Custom endpoint", models: [] },
+  ];
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="px-5 pt-4 pb-3 border-b border-[var(--border-subtle)] shrink-0">
+        <h1 className="text-base font-semibold text-[var(--text-primary)]">{t("title")}</h1>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <Tabs value={tab} onValueChange={setTab} className="flex flex-col">
+          <div className="px-5 pt-3 border-b border-[var(--border-subtle)]">
+            <TabsList className="gap-0.5">
+              <TabsTrigger value="ai">{t("tabs.ai")}</TabsTrigger>
+              <TabsTrigger value="privacy">{t("tabs.privacy")}</TabsTrigger>
+              <TabsTrigger value="about">{t("tabs.about")}</TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* ── AI & Summaries ── */}
+          <TabsContent value="ai" className="px-5 py-5 space-y-5">
+            <section className="space-y-3">
+              <label className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+                {t("ai.provider")}
+              </label>
+              <Select
+                value={llmConfig.provider}
+                onValueChange={(v) => saveConfig({ ...llmConfig, provider: v as LlmProvider })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CLOUD_PROVIDERS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </section>
+
+            {llmConfig.provider !== "custom" && (
+              <section className="space-y-3">
+                <label className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+                  {t("ai.model")}
+                </label>
+                {llmConfig.provider === "ollama" && ollamaModels.length > 0 ? (
+                  <Select
+                    value={llmConfig.model}
+                    onValueChange={(v) => saveConfig({ ...llmConfig, model: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ollamaModels.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={llmConfig.model}
+                    onChange={(e) => saveConfig({ ...llmConfig, model: e.target.value })}
+                    placeholder="Model name"
+                  />
+                )}
+              </section>
+            )}
+
+            {llmConfig.provider !== "ollama" && (
+              <section className="space-y-3">
+                <label className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+                  API Key
+                </label>
+                <Input
+                  type="password"
+                  value={llmConfig.apiKey ?? ""}
+                  onChange={(e) => saveConfig({ ...llmConfig, apiKey: e.target.value || null })}
+                  placeholder="sk-…"
+                />
+              </section>
+            )}
+
+            {(llmConfig.provider === "ollama" || llmConfig.provider === "custom") && (
+              <section className="space-y-3">
+                <label className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+                  Base URL
+                </label>
+                <Input
+                  value={llmConfig.baseUrl ?? ""}
+                  onChange={(e) => saveConfig({ ...llmConfig, baseUrl: e.target.value || null })}
+                  placeholder="http://localhost:11434"
+                />
+              </section>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTest}
+              loading={testState === "testing"}
+              className="gap-2"
+            >
+              {testState === "ok" && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--success)]" />}
+              {testState === "failed" && <XCircle className="w-3.5 h-3.5 text-[var(--error)]" />}
+              {t("ai.test")}
+            </Button>
+          </TabsContent>
+
+          {/* ── Privacy ── */}
+          <TabsContent value="privacy" className="px-5 py-5 space-y-5">
+            <section className="space-y-2">
+              <label className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+                {t("privacy.data_location")}
+              </label>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-xs bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded px-2.5 py-1.5 truncate text-[var(--text-secondary)]">
+                  {dataDir ?? "…"}
+                </code>
+                <Button variant="outline" size="icon-sm" aria-label="Open folder">
+                  <FolderOpen className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </section>
+
+            <Separator />
+
+            <section className="space-y-3">
+              <label className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+                Danger zone
+              </label>
+              <div className="rounded-xl border border-[var(--error)]/30 p-4 space-y-2">
+                <p className="text-sm font-medium text-[var(--text-primary)]">
+                  {t("privacy.delete_all.label")}
+                </p>
+                <p className="text-xs text-[var(--text-tertiary)]">
+                  {t("privacy.delete_all.confirm_description")}
+                </p>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setDeleteDialog(true)}
+                  className="gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {t("privacy.delete_all.label")}
+                </Button>
+              </div>
+            </section>
+          </TabsContent>
+
+          {/* ── About ── */}
+          <TabsContent value="about" className="px-5 py-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl gradient-brand flex items-center justify-center">
+                <Info className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">MeetFlow</p>
+                <p className="text-xs text-[var(--text-tertiary)]">v0.1.0 · MIT License</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <a
+                href="https://github.com/JonatanGhub/MEETFLOW-AI_MEETING_NOTES"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-[var(--accent)] hover:underline"
+              >
+                <Github className="w-4 h-4" />
+                {t("about.github")}
+                <ExternalLink className="w-3 h-3 opacity-50" />
+              </a>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("privacy.delete_all.confirm_title")}</DialogTitle>
+            <DialogDescription>{t("privacy.delete_all.confirm_description")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setDeleteDialog(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteAll} loading={deleting}>
+              {t("privacy.delete_all.confirm_button")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

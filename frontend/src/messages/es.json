@@ -1,0 +1,312 @@
+{
+  "common": {
+    "app": {
+      "name": "MeetFlow",
+      "tagline": "Tus reuniones. Tus datos. Tu control."
+    },
+    "button": {
+      "continue": "Continuar",
+      "back": "Atrás",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "close": "Cerrar",
+      "confirm": "Confirmar",
+      "connect": "Conectar",
+      "disconnect": "Desconectar",
+      "download": "Descargar",
+      "export": "Exportar",
+      "copy": "Copiar",
+      "retry": "Reintentar",
+      "skip": "Omitir por ahora"
+    },
+    "status": {
+      "loading": "Cargando...",
+      "saving": "Guardando...",
+      "error": "Algo salió mal",
+      "success": "Hecho"
+    }
+  },
+  "navigation": {
+    "record": "Grabar",
+    "meetings": "Reuniones",
+    "analytics": "Analíticas",
+    "integrations": "Integraciones",
+    "settings": "Ajustes",
+    "help": "Ayuda y docs"
+  },
+  "onboarding": {
+    "step": "Paso {current} de {total}",
+    "welcome": {
+      "title": "Tus reuniones. Tus datos. Tu control.",
+      "subtitle": "MeetFlow graba, transcribe y resume tus reuniones — 100% en tu dispositivo.",
+      "features": {
+        "privacy": {
+          "title": "Privacidad primero",
+          "description": "Audio y transcripciones nunca salen de tu ordenador"
+        },
+        "ai": {
+          "title": "Impulsado por IA",
+          "description": "Resúmenes, tareas e insights automáticamente"
+        },
+        "offline": {
+          "title": "Funciona sin internet",
+          "description": "No requiere conexión para grabar y transcribir"
+        }
+      },
+      "cta": "Empezar"
+    },
+    "permissions": {
+      "title": "Acceso al micrófono",
+      "subtitle": "MeetFlow necesita acceso a tu micrófono para grabar reuniones.",
+      "microphone": {
+        "label": "Micrófono",
+        "description": "Captura tu voz y la de los participantes",
+        "granted": "Concedido",
+        "denied": "Denegado — revisa los ajustes de Windows"
+      },
+      "system_audio": {
+        "label": "Audio del sistema",
+        "description": "Captura audio de llamadas (Zoom, Teams, Meet…)",
+        "note": "Windows: WASAPI loopback, sin permiso especial necesario"
+      },
+      "test": {
+        "label": "Probar micrófono",
+        "speaking": "Escuchando…",
+        "tip": "Di algo para verificar que el micrófono funciona"
+      }
+    },
+    "model": {
+      "title": "Elige tu modelo de transcripción",
+      "subtitle": "Los modelos Whisper se ejecutan 100% localmente. Descarga una vez, usa siempre.",
+      "badges": {
+        "recommended": "Recomendado",
+        "best_value": "Mejor relación"
+      },
+      "speed": {
+        "label": "Velocidad",
+        "lightning": "Ultra rápido",
+        "fast": "Rápido",
+        "medium": "Medio",
+        "slow": "Lento"
+      },
+      "accuracy": {
+        "label": "Precisión",
+        "basic": "Básica",
+        "good": "Buena",
+        "high": "Alta",
+        "best": "Mejor"
+      },
+      "size": "{size} MB",
+      "download": {
+        "start": "Descargar",
+        "downloading": "Descargando… {percent}%",
+        "verifying": "Verificando…",
+        "done": "Listo",
+        "error": "Descarga fallida — reintentar"
+      },
+      "models": {
+        "tiny": {
+          "name": "Tiny",
+          "description": "Ultra rápido, precisión básica. Ideal para notas rápidas."
+        },
+        "small": {
+          "name": "Small",
+          "description": "Gran equilibrio entre velocidad y calidad."
+        },
+        "medium": {
+          "name": "Medium",
+          "description": "Alta precisión, velocidad moderada."
+        },
+        "large": {
+          "name": "Large v3 Turbo",
+          "description": "Mejor precisión, optimizado para velocidad."
+        }
+      }
+    },
+    "ai_provider": {
+      "title": "Configura los resúmenes con IA",
+      "subtitle": "Elige cómo MeetFlow genera resúmenes y tareas.",
+      "modes": {
+        "local": {
+          "label": "Ollama local",
+          "description": "100% privado — ningún dato sale de tu red",
+          "detecting": "Detectando Ollama…",
+          "detected": "Ollama detectado",
+          "not_found": "Ollama no encontrado",
+          "install_prompt": "¿No tienes Ollama?",
+          "install_cta": "Instalar Ollama →",
+          "models_label": "Elegir modelo",
+          "remote": {
+            "label": "Ollama en mi red",
+            "host_label": "Host",
+            "host_placeholder": "192.168.1.50 o mi-servidor.local",
+            "port_label": "Puerto",
+            "test": "Probar conexión"
+          }
+        },
+        "cloud": {
+          "label": "API cloud (tu clave)",
+          "description": "Las transcripciones se envían al proveedor elegido",
+          "providers": {
+            "anthropic": "Anthropic Claude",
+            "openai": "OpenAI",
+            "groq": "Groq (tier gratuito, rápido)",
+            "openrouter": "OpenRouter (200+ modelos)",
+            "mistral": "Mistral AI"
+          },
+          "api_key_label": "API Key",
+          "api_key_placeholder": "sk-…",
+          "get_key": "Obtener API key →",
+          "model_label": "Modelo",
+          "test": "Probar conexión",
+          "testing": "Probando…",
+          "ok": "Conectado",
+          "failed": "Fallido — revisa tu clave"
+        },
+        "custom": {
+          "label": "Endpoint personalizado",
+          "description": "LM Studio, vLLM, LocalAI, Jan, etc.",
+          "url_label": "URL base",
+          "url_placeholder": "http://localhost:1234/v1",
+          "key_label": "API Key (opcional)",
+          "model_label": "Nombre del modelo",
+          "test": "Probar conexión"
+        }
+      }
+    }
+  },
+  "recording": {
+    "button": {
+      "start": "Iniciar grabación",
+      "stop": "Detener grabación",
+      "pause": "Pausar",
+      "resume": "Reanudar"
+    },
+    "status": {
+      "idle": "Listo para grabar",
+      "recording": "Grabando",
+      "paused": "En pausa",
+      "stopping": "Procesando…",
+      "error": "Error de grabación"
+    },
+    "duration": "{hours}:{minutes}:{seconds}",
+    "transcript": {
+      "label": "Transcripción en vivo",
+      "placeholder": "La transcripción aparecerá aquí mientras hablas…",
+      "language_detected": "Detectado: {language}"
+    },
+    "meeting_name": {
+      "label": "Nombre de la reunión",
+      "placeholder": "Ej: Standup semanal · Planning Q2"
+    },
+    "saved": "Reunión guardada"
+  },
+  "meetings": {
+    "title": "Reuniones",
+    "empty": {
+      "title": "Aún no hay reuniones",
+      "description": "Empieza a grabar para capturar tu primera reunión.",
+      "cta": "Iniciar grabación"
+    },
+    "search": {
+      "placeholder": "Buscar reuniones, transcripciones, notas…"
+    },
+    "card": {
+      "duration": "{duration}",
+      "score": "Puntuación: {score}",
+      "action_items": "{count} tareas"
+    },
+    "detail": {
+      "tabs": {
+        "transcript": "Transcripción",
+        "notes": "Notas",
+        "summary": "Resumen IA",
+        "actions": "Tareas",
+        "export": "Exportar"
+      },
+      "summary": {
+        "generating": "Generando resumen…",
+        "generate": "Generar resumen",
+        "empty": "Sin resumen aún. Haz clic para generar.",
+        "executive": "Resumen",
+        "action_items": "Tareas",
+        "topics": "Temas",
+        "sentiment": "Sentimiento",
+        "score": "Puntuación de reunión"
+      },
+      "notes": {
+        "placeholder": "Escribe notas de la reunión aquí…",
+        "autosaved": "Guardado"
+      },
+      "export": {
+        "markdown": "Exportar como Markdown",
+        "pdf": "Exportar como PDF",
+        "json": "Exportar como JSON"
+      }
+    },
+    "delete": {
+      "title": "Eliminar reunión",
+      "description": "Esto eliminará permanentemente la reunión, transcripción y notas. No se puede deshacer.",
+      "confirm": "Eliminar"
+    }
+  },
+  "settings": {
+    "title": "Ajustes",
+    "tabs": {
+      "general": "General",
+      "audio": "Audio",
+      "transcription": "Transcripción",
+      "ai": "IA y Resúmenes",
+      "privacy": "Privacidad",
+      "about": "Acerca de"
+    },
+    "general": {
+      "language": "Idioma de la interfaz",
+      "theme": "Tema",
+      "themes": {
+        "dark": "Oscuro",
+        "light": "Claro",
+        "system": "Seguir sistema"
+      },
+      "startup": "Iniciar al arrancar"
+    },
+    "audio": {
+      "microphone": "Micrófono",
+      "system_audio": "Audio del sistema",
+      "test": "Probar audio",
+      "gain": "Ganancia de entrada"
+    },
+    "transcription": {
+      "model": "Modelo activo",
+      "language": "Idioma",
+      "auto_detect": "Detección automática",
+      "download_models": "Gestionar modelos"
+    },
+    "ai": {
+      "provider": "Proveedor de resúmenes",
+      "model": "Modelo",
+      "temperature": "Temperatura",
+      "test": "Probar conexión"
+    },
+    "privacy": {
+      "data_location": "Ubicación de datos",
+      "open_folder": "Abrir carpeta",
+      "export_all": "Exportar todos mis datos",
+      "delete_all": {
+        "label": "Eliminar todos los datos",
+        "confirm_title": "¿Eliminar todos los datos?",
+        "confirm_description": "Esto eliminará permanentemente todas las reuniones, transcripciones, notas y ajustes. No hay forma de deshacer esto.",
+        "confirm_button": "Eliminar todo"
+      }
+    },
+    "about": {
+      "version": "Versión {version}",
+      "license": "Licencia MIT — Código abierto",
+      "github": "Ver en GitHub",
+      "report_bug": "Reportar un bug",
+      "changelog": "Registro de cambios"
+    }
+  }
+}

@@ -1,47 +1,73 @@
 # MeetFlow — Project Status
 
-_Updated: 2026-05-02_
+_Updated: 2026-05-09_
 
 ## ⚡ SIGUIENTE ACCIÓN
 
-**Bloqueado por toolchain.** Necesario antes de continuar:
+**Primera ejecución real del dev server:**
 
-1. **Instalar Rust toolchain** — `winget install Rustlang.Rustup` y luego `rustup default stable-msvc`
-2. **Instalar Visual Studio Build Tools 2022** con workload "Desktop development with C++" (necesario para compilar whisper-rs y plugins Tauri en Windows)
-3. **Instalar GitHub CLI** (opcional, recomendado): `winget install GitHub.cli` y `gh auth login`
+```bash
+cd frontend
+pnpm tauri dev        # primera ejecución — abre la ventana Tauri
+```
 
-Una vez instalados, la siguiente acción es:
-- `cd frontend && pnpm create tauri-app .` (con flags para no interactivo) para inicializar Tauri v2 + Next.js.
-- Aplicar el design system (paleta + tipografía) de `.claude/CLAUDE.md` §6.
-- Setup i18n (next-intl) con archivos `messages/en.json` y `es.json`.
+Estado del scaffold a 2026-05-09:
+- `cargo check` → ✅ 0 errores (23 warnings, todos de stubs)
+- `pnpm type-check` → ✅ 0 errores
+- `pnpm test` → ✅ 9/9 passing
+
+**Siguiente paso tras `pnpm tauri dev`:**
+Integrar `whisper-rs` real en `src/whisper/engine.rs` (actualmente stub).
 
 ## Hitos completados
 
 - [x] Repo clonado y plan maestro revisado
-- [x] Decisiones de stack ajustadas (todo Rust, sin Python; sherpa-onnx en lugar de pyannote; Windows-only v0.1)
-- [x] MVP cortado a v0.1 (recording + transcription + summary + notes + export)
-- [x] Workspace estructura base creada
-- [x] `.claude/` configurado con CLAUDE.md, settings.json y 6 slash commands
-- [x] LICENSE (MIT), PRIVACY, TERMS, CHANGELOG, CONTRIBUTING, README escritos
-- [x] `.gitignore` con todas las exclusiones (modelos, audio, secrets, build outputs)
+- [x] Stack decisions fijadas (todo Rust, sin Python; sherpa-onnx en lugar de pyannote)
+- [x] MVP v0.1 scope cortado y aprobado
+- [x] Workspace estructura base + `.claude/` settings + slash commands
+- [x] LICENSE, PRIVACY, TERMS, CHANGELOG, CONTRIBUTING, README
+- [x] `.gitignore` completo
 - [x] pnpm instalado globalmente
+- [x] Rust + MSVC Build Tools 2022 instalados (workload C++ desktop)
+- [x] Init Tauri v2 + Next.js 14 en `frontend/`
+- [x] Design system Tailwind ultra-dark (globals.css, tailwind.config.ts)
+- [x] i18n next-intl client-side EN+ES
+- [x] Zustand store (recordingState, onboardingComplete, sidebarCollapsed)
+- [x] Rust backend completo:
+  - [x] `error.rs` — MeetflowError enum + From impls
+  - [x] `db/` — schema migrations + models
+  - [x] `audio/` — capture (cpal WASAPI), pipeline (tokio), devices
+  - [x] `whisper/` — model catalog, download manager (SHA256), engine stub
+  - [x] `llm/` — providers, client (Ollama + Claude + OpenAI-compat), summary
+  - [x] `commands/` — audio, meetings, settings, whisper, llm (25 commands)
+  - [x] `lib.rs` — Tauri builder, DB init, state, invoke_handler
+- [x] TypeScript wrappers (`src/lib/tauri.ts`) — tipos + wrappers para los 25 comandos
+- [x] shadcn/ui components: button, badge, card, input, textarea, separator, progress, tooltip, dialog, tabs, scroll-area, select
+- [x] Layout sidebar (collapsible, recording indicator, nav items)
+- [x] Hooks: useRecording, useMeetings (TanStack Query)
+- [x] Pages: onboarding (3 steps), record, meetings list, meeting detail, settings
+- [x] GitHub Actions: ci.yml (Windows) + release.yml (tag-triggered NSIS)
+- [x] Vitest config + test setup (Tauri mocks)
+- [x] Placeholder Tauri icons generated (all 5: 32x32.png, 128x128.png, 128x128@2x.png, icon.png, icon.ico)
+- [x] `cargo check` — 0 errors (fixed: generate_handler paths, From conflict, !Send pipeline, Manager import, setup ?)
+- [x] `pnpm type-check` — 0 errors
+- [x] `pnpm test` — 9/9 passing (fixed: truncate off-by-one)
 
-## Hitos pendientes (orden)
+## Hitos pendientes (v0.1)
 
-1. Instalar Rust + MSVC Build Tools (BLOQUEADO — requiere usuario)
-2. Init Tauri v2 + Next.js 14 en `frontend/`
-3. Tailwind con design system ultra-dark
-4. i18n next-intl (EN+ES)
-5. Audio recording engine (cpal + WASAPI)
-6. Whisper integration + model download manager
-7. LLM clients (Ollama + Claude + OpenAI)
-8. UI: sidebar, recording, meetings list, detail view
-9. BlockNote editor + export Markdown
-10. Onboarding mínimo (3 pasos)
-11. GitHub Actions CI + release workflow
-12. Tests (Vitest + cargo test + Playwright)
-13. v0.1.0 release con NSIS installer
+1. **`pnpm tauri dev` — primera ejecución con ventana abierta** ← SIGUIENTE
+2. **whisper-rs real** en `engine.rs` — actualmente stub
+3. **Playwright e2e** config + tests básicos de onboarding + recording flow
+4. **cargo test** — añadir unit tests para LLM summary parser + DB helpers
+5. **v0.1.0 tag** → CI release build → NSIS installer en GitHub Releases
+
+## Para v0.2
+
+- Diarización sherpa-onnx (speaker labels en transcriptos)
+- Google OAuth + Notion + Slack integrations
+- AI Agent Executor (post-meeting actions via Claude)
+- macOS DMG bundle
 
 ## Decisiones registradas
 
-Ver [`docs/decisions/`](./decisions/) (vacío — primera ADR pendiente).
+- `docs/decisions/ADR-001-stack.md` — stack decisions (no Python, sherpa-onnx, Windows-first)

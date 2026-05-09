@@ -1,0 +1,67 @@
+[package]
+name = "meetflow"
+version = "0.1.0"
+edition = "2021"
+description = "Privacy-first AI meeting intelligence"
+license = "MIT"
+default-run = "meetflow"
+
+[lib]
+name = "meetflow_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+# ─── Build deps ────────────────────────────────────────────────────────────────
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+# ─── Runtime deps ──────────────────────────────────────────────────────────────
+[dependencies]
+# Tauri v2 core + plugins
+tauri            = { version = "2", features = ["tray-icon"] }
+tauri-plugin-store = "2"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Database (SQLite, bundled libsqlite3)
+rusqlite = { version = "0.31", features = ["bundled"] }
+
+# HTTP client for LLM APIs + model downloads
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls"] }
+
+# Audio capture (cpal = cross-platform, WASAPI on Windows)
+cpal = "0.15"
+
+# WAV writing
+hound = "3.5"
+
+# Logging
+tracing            = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+# Error handling
+anyhow  = "1"
+thiserror = "1"
+
+# Utilities
+uuid    = { version = "1", features = ["v4"] }
+chrono  = { version = "0.4", features = ["serde"] }
+sha2    = "0.10"
+hex     = "0.4"
+bytes   = "1"
+futures = "0.3"
+
+[features]
+# Required by Tauri for production builds. DO NOT REMOVE.
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic  = "abort"
+codegen-units = 1
+lto    = true
+opt-level = 3
+strip  = true
