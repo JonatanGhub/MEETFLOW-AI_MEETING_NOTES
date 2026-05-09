@@ -79,11 +79,7 @@ impl LlmClient {
     }
 
     /// Send a prompt and return the assistant's reply.
-    pub async fn complete(
-        &self,
-        system: &str,
-        user: &str,
-    ) -> Result<String, MeetflowError> {
+    pub async fn complete(&self, system: &str, user: &str) -> Result<String, MeetflowError> {
         match self.config.provider {
             LlmProvider::Claude => self.complete_anthropic(system, user).await,
             _ => self.complete_openai_compat(system, user).await,
@@ -92,7 +88,11 @@ impl LlmClient {
 
     // ── OpenAI-compatible (Ollama, OpenAI, Groq, OpenRouter, Mistral, Custom) ──
 
-    async fn complete_openai_compat(&self, system: &str, user: &str) -> Result<String, MeetflowError> {
+    async fn complete_openai_compat(
+        &self,
+        system: &str,
+        user: &str,
+    ) -> Result<String, MeetflowError> {
         let base = self
             .config
             .provider
@@ -107,8 +107,14 @@ impl LlmClient {
         let body = ChatRequest {
             model: self.config.model.clone(),
             messages: vec![
-                ChatMessage { role: "system".into(), content: system.into() },
-                ChatMessage { role: "user".into(), content: user.into() },
+                ChatMessage {
+                    role: "system".into(),
+                    content: system.into(),
+                },
+                ChatMessage {
+                    role: "user".into(),
+                    content: user.into(),
+                },
             ],
             max_tokens: self.config.max_tokens,
             temperature: self.config.temperature,
@@ -179,7 +185,8 @@ impl LlmClient {
 
     /// Quick connection test — sends a minimal prompt and checks for any response.
     pub async fn test_connection(&self) -> Result<(), MeetflowError> {
-        self.complete("You are a test assistant.", "Reply with only the word: ok").await?;
+        self.complete("You are a test assistant.", "Reply with only the word: ok")
+            .await?;
         Ok(())
     }
 }

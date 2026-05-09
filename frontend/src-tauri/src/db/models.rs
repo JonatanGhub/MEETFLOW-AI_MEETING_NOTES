@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct Meeting {
     pub id: String,
     pub title: String,
-    pub started_at: i64,   // Unix ms
+    pub started_at: i64, // Unix ms
     pub ended_at: Option<i64>,
     pub duration_sec: Option<i64>,
     pub audio_path: Option<String>,
@@ -30,10 +30,10 @@ pub struct Transcript {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TranscriptSegment {
-    pub start: f64,  // seconds from recording start
+    pub start: f64, // seconds from recording start
     pub end: f64,
     pub text: String,
-    pub speaker: Option<String>,  // v0.2+ with sherpa-onnx
+    pub speaker: Option<String>, // v0.2+ with sherpa-onnx
 }
 
 /// AI-generated summary for a meeting.
@@ -58,7 +58,7 @@ pub struct Summary {
 pub struct ActionItem {
     pub text: String,
     pub assignee: Option<String>,
-    pub due: Option<String>,   // ISO 8601 date string
+    pub due: Option<String>, // ISO 8601 date string
     pub done: bool,
 }
 
@@ -68,7 +68,7 @@ pub struct ActionItem {
 pub struct Note {
     pub id: String,
     pub meeting_id: String,
-    pub content: String,  // BlockNote JSON array serialized to string
+    pub content: String, // BlockNote JSON array serialized to string
     pub updated_at: i64,
 }
 
@@ -82,5 +82,5 @@ pub struct MeetingCard {
     pub duration_sec: Option<i64>,
     pub score: Option<i64>,
     pub action_item_count: usize,
-    pub summary_snippet: Option<String>,  // first 120 chars of executive_summary
+    pub summary_snippet: Option<String>, // first 120 chars of executive_summary
 }

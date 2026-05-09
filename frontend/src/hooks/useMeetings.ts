@@ -13,8 +13,6 @@ import {
   updateMeetingTitle,
   exportMeetingMarkdown,
   generateMeetingSummary,
-  type MeetingCard,
-  type Meeting,
   type LlmConfig,
 } from "@/lib/tauri";
 

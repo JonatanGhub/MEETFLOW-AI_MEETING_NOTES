@@ -40,7 +40,9 @@ pub async fn generate_meeting_summary(
     );
 
     {
-        let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+        let conn =
+            db.0.lock()
+                .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
         let action_items_json = serde_json::to_string(&summary.action_items)
             .map_err(|e| MeetflowError::Llm(e.to_string()))?;
         let topics_json = serde_json::to_string(&summary.topics)

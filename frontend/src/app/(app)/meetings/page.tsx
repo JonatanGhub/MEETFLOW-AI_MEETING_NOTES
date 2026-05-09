@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 import { Mic, Search, CalendarDays, Clock, CheckSquare, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { cn, formatDuration, formatRelativeDate } from "@/lib/utils";
 import { useMeetingList } from "@/hooks/useMeetings";
 import type { MeetingCard } from "@/lib/tauri";
@@ -16,7 +14,6 @@ import type { MeetingCard } from "@/lib/tauri";
 // ─── Meeting card item ────────────────────────────────────────────────────────
 
 function MeetingItem({ card, onClick }: { card: MeetingCard; onClick: () => void }) {
-  const t = useTranslations("meetings");
   const dateStr = formatRelativeDate(card.startedAt);
   const durationStr = card.durationSec ? formatDuration(card.durationSec) : null;
 

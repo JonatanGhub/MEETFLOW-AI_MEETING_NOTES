@@ -31,7 +31,12 @@ impl LlmProvider {
     pub fn is_openai_compatible(&self) -> bool {
         matches!(
             self,
-            Self::Ollama | Self::OpenAi | Self::Groq | Self::OpenRouter | Self::Mistral | Self::Custom
+            Self::Ollama
+                | Self::OpenAi
+                | Self::Groq
+                | Self::OpenRouter
+                | Self::Mistral
+                | Self::Custom
         )
     }
 }
@@ -43,7 +48,7 @@ pub struct LlmConfig {
     pub provider: LlmProvider,
     pub model: String,
     pub api_key: Option<String>,
-    pub base_url: Option<String>,  // for Ollama remote / custom
+    pub base_url: Option<String>, // for Ollama remote / custom
     pub max_tokens: u32,
     pub temperature: f32,
 }

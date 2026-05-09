@@ -7,7 +7,6 @@ import {
   Trash2,
   CheckCircle2,
   XCircle,
-  Loader2,
   ExternalLink,
   Github,
   Info,

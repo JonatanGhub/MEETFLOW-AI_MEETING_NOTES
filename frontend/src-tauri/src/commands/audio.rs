@@ -42,9 +42,14 @@ pub async fn start_recording(
 ) -> Result<String, MeetflowError> {
     // Prevent starting a second recording
     {
-        let guard = active.0.lock().map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
+        let guard = active
+            .0
+            .lock()
+            .map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
         if guard.is_some() {
-            return Err(MeetflowError::Audio("A recording is already in progress".into()));
+            return Err(MeetflowError::Audio(
+                "A recording is already in progress".into(),
+            ));
         }
     }
 
@@ -55,7 +60,9 @@ pub async fn start_recording(
 
     // Insert meeting into DB
     {
-        let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+        let conn =
+            db.0.lock()
+                .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
         conn.execute(
             "INSERT INTO meetings (id, title, started_at, audio_path) VALUES (?1, ?2, ?3, ?4)",
             rusqlite::params![
@@ -71,7 +78,10 @@ pub async fn start_recording(
 
     let handle = RecordingPipeline::start(meeting_id.clone(), audio_path, transcript_tx).await?;
 
-    let mut guard = active.0.lock().map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
+    let mut guard = active
+        .0
+        .lock()
+        .map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
     *guard = Some(handle);
 
     tracing::info!("Recording started: {meeting_id}");
@@ -84,7 +94,10 @@ pub async fn stop_recording(
     db: State<'_, DbPool>,
     active: State<'_, ActiveRecording>,
 ) -> Result<String, MeetflowError> {
-    let mut guard = active.0.lock().map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
+    let mut guard = active
+        .0
+        .lock()
+        .map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
 
     let handle = guard
         .take()
@@ -103,7 +116,9 @@ pub async fn stop_recording(
 
     // Update meeting in DB
     {
-        let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+        let conn =
+            db.0.lock()
+                .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
         conn.execute(
             "UPDATE meetings SET ended_at = ?1, duration_sec = ?2 WHERE id = ?3",
             rusqlite::params![ended_at, duration_sec, meeting_id],
@@ -116,10 +131,11 @@ pub async fn stop_recording(
 
 /// Pause the active recording.
 #[tauri::command]
-pub fn pause_recording(
-    active: State<'_, ActiveRecording>,
-) -> Result<(), MeetflowError> {
-    let guard = active.0.lock().map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
+pub fn pause_recording(active: State<'_, ActiveRecording>) -> Result<(), MeetflowError> {
+    let guard = active
+        .0
+        .lock()
+        .map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
     let handle = guard
         .as_ref()
         .ok_or_else(|| MeetflowError::Audio("No active recording".into()))?;
@@ -129,10 +145,11 @@ pub fn pause_recording(
 
 /// Resume a paused recording.
 #[tauri::command]
-pub fn resume_recording(
-    active: State<'_, ActiveRecording>,
-) -> Result<(), MeetflowError> {
-    let guard = active.0.lock().map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
+pub fn resume_recording(active: State<'_, ActiveRecording>) -> Result<(), MeetflowError> {
+    let guard = active
+        .0
+        .lock()
+        .map_err(|_| MeetflowError::Audio("Lock poisoned".into()))?;
     let handle = guard
         .as_ref()
         .ok_or_else(|| MeetflowError::Audio("No active recording".into()))?;
@@ -142,9 +159,7 @@ pub fn resume_recording(
 
 /// Get current recording status.
 #[tauri::command]
-pub fn get_recording_status(
-    active: State<'_, ActiveRecording>,
-) -> RecordingStatus {
+pub fn get_recording_status(active: State<'_, ActiveRecording>) -> RecordingStatus {
     let guard = active.0.lock().unwrap_or_else(|p| p.into_inner());
     match guard.as_ref() {
         None => RecordingStatus {

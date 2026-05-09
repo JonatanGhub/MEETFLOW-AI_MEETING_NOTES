@@ -54,7 +54,9 @@ fn truncate_transcript(text: &str, max_chars: usize) -> &str {
     } else {
         // Cut at last word boundary
         let cut = &text[..max_chars];
-        cut.rfind(char::is_whitespace).map(|i| &text[..i]).unwrap_or(cut)
+        cut.rfind(char::is_whitespace)
+            .map(|i| &text[..i])
+            .unwrap_or(cut)
     }
 }
 

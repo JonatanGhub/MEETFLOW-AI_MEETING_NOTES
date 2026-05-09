@@ -81,7 +81,10 @@ pub async fn cancel_whisper_download(
     let partial = models_dir.join(format!("ggml-{model_id}.bin"));
     if partial.exists() {
         tokio::fs::remove_file(&partial).await?;
-        tracing::info!("Cancelled download, removed partial file: {}", partial.display());
+        tracing::info!(
+            "Cancelled download, removed partial file: {}",
+            partial.display()
+        );
     }
     Ok(())
 }

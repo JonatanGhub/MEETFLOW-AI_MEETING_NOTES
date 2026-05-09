@@ -62,7 +62,9 @@ pub async fn download_model(
         .error_for_status()
         .map_err(|e| MeetflowError::Http(e.to_string()))?;
 
-    let total = response.content_length().unwrap_or(entry.size_mb * 1024 * 1024);
+    let total = response
+        .content_length()
+        .unwrap_or(entry.size_mb * 1024 * 1024);
     let mut downloaded: u64 = 0;
     let mut stream = response.bytes_stream();
 

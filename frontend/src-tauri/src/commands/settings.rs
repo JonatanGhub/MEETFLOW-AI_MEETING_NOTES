@@ -6,11 +6,10 @@ use crate::storage;
 
 /// Get a settings value by key.
 #[tauri::command]
-pub fn get_setting(
-    db: State<'_, DbPool>,
-    key: String,
-) -> Result<Option<String>, MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+pub fn get_setting(db: State<'_, DbPool>, key: String) -> Result<Option<String>, MeetflowError> {
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
     let result = conn.query_row(
         "SELECT value FROM settings WHERE key = ?1",
         rusqlite::params![key],
@@ -25,12 +24,10 @@ pub fn get_setting(
 
 /// Set (upsert) a settings value.
 #[tauri::command]
-pub fn set_setting(
-    db: State<'_, DbPool>,
-    key: String,
-    value: String,
-) -> Result<(), MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+pub fn set_setting(db: State<'_, DbPool>, key: String, value: String) -> Result<(), MeetflowError> {
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
     let now = chrono::Utc::now().timestamp_millis();
     conn.execute(
         "INSERT INTO settings (key, value, updated_at) VALUES (?1, ?2, ?3)
@@ -49,13 +46,12 @@ pub fn get_app_data_dir(app: AppHandle) -> Result<String, MeetflowError> {
 /// Delete all user data: meetings, transcripts, notes, summaries, settings.
 /// Audio files on disk are also removed.
 #[tauri::command]
-pub async fn delete_all_data(
-    app: AppHandle,
-    db: State<'_, DbPool>,
-) -> Result<(), MeetflowError> {
+pub async fn delete_all_data(app: AppHandle, db: State<'_, DbPool>) -> Result<(), MeetflowError> {
     // Delete DB records
     {
-        let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+        let conn =
+            db.0.lock()
+                .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
         conn.execute_batch(
             "DELETE FROM summaries;
              DELETE FROM transcripts;
@@ -69,7 +65,12 @@ pub async fn delete_all_data(
     let recordings_dir = storage::recordings_dir(&app)?;
     if let Ok(entries) = std::fs::read_dir(&recordings_dir) {
         for entry in entries.flatten() {
-            if entry.path().extension().map(|e| e == "wav").unwrap_or(false) {
+            if entry
+                .path()
+                .extension()
+                .map(|e| e == "wav")
+                .unwrap_or(false)
+            {
                 tokio::fs::remove_file(entry.path()).await.ok();
             }
         }

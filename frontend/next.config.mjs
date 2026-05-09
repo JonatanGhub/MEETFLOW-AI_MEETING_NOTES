@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // Static export for Tauri production builds
   output: "export",
   // Custom output dir — must match tauri.conf.json frontendDist

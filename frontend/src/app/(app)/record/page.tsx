@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Mic, MicOff, Pause, Play, Square, Clock } from "lucide-react";
+import { Mic, Pause, Play, Square, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, formatDuration } from "@/lib/utils";

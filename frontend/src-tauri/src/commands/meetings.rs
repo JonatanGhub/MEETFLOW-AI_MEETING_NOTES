@@ -15,7 +15,9 @@ pub fn list_meetings(
     limit: Option<i64>,
     offset: Option<i64>,
 ) -> Result<Vec<MeetingCard>, MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
     let limit = limit.unwrap_or(50).min(200);
     let offset = offset.unwrap_or(0);
 
@@ -50,25 +52,28 @@ pub fn list_meetings(
 /// Get full meeting detail.
 #[tauri::command]
 pub fn get_meeting(db: State<'_, DbPool>, id: String) -> Result<Meeting, MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
-    let meeting = conn.query_row(
-        "SELECT id, title, started_at, ended_at, duration_sec, audio_path, language, created_at
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+    let meeting = conn
+        .query_row(
+            "SELECT id, title, started_at, ended_at, duration_sec, audio_path, language, created_at
          FROM meetings WHERE id = ?1",
-        params![id],
-        |row| {
-            Ok(Meeting {
-                id: row.get(0)?,
-                title: row.get(1)?,
-                started_at: row.get(2)?,
-                ended_at: row.get(3)?,
-                duration_sec: row.get(4)?,
-                audio_path: row.get(5)?,
-                language: row.get(6)?,
-                created_at: row.get(7)?,
-            })
-        },
-    )
-    .map_err(|_| MeetflowError::NotFound(format!("Meeting {id} not found")))?;
+            params![id],
+            |row| {
+                Ok(Meeting {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    started_at: row.get(2)?,
+                    ended_at: row.get(3)?,
+                    duration_sec: row.get(4)?,
+                    audio_path: row.get(5)?,
+                    language: row.get(6)?,
+                    created_at: row.get(7)?,
+                })
+            },
+        )
+        .map_err(|_| MeetflowError::NotFound(format!("Meeting {id} not found")))?;
 
     Ok(meeting)
 }
@@ -80,7 +85,9 @@ pub fn update_meeting_title(
     id: String,
     title: String,
 ) -> Result<(), MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
     conn.execute(
         "UPDATE meetings SET title = ?1 WHERE id = ?2",
         params![title, id],
@@ -91,7 +98,9 @@ pub fn update_meeting_title(
 /// Delete a meeting and all associated data (CASCADE).
 #[tauri::command]
 pub fn delete_meeting(db: State<'_, DbPool>, id: String) -> Result<(), MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
     conn.execute("DELETE FROM meetings WHERE id = ?1", params![id])?;
     Ok(())
 }
@@ -102,7 +111,9 @@ pub fn get_transcript(
     db: State<'_, DbPool>,
     meeting_id: String,
 ) -> Result<Option<Transcript>, MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
     let result = conn.query_row(
         "SELECT id, meeting_id, content, segments, word_count, created_at
          FROM transcripts WHERE meeting_id = ?1",
@@ -134,7 +145,9 @@ pub fn get_summary(
     db: State<'_, DbPool>,
     meeting_id: String,
 ) -> Result<Option<Summary>, MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
     let result = conn.query_row(
         "SELECT id, meeting_id, executive_summary, action_items, topics, sentiment, score, provider, model, created_at
          FROM summaries WHERE meeting_id = ?1",
@@ -169,11 +182,10 @@ pub fn get_summary(
 
 /// Get block-based notes for a meeting.
 #[tauri::command]
-pub fn get_note(
-    db: State<'_, DbPool>,
-    meeting_id: String,
-) -> Result<Option<Note>, MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+pub fn get_note(db: State<'_, DbPool>, meeting_id: String) -> Result<Option<Note>, MeetflowError> {
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
     let result = conn.query_row(
         "SELECT id, meeting_id, content, updated_at FROM notes WHERE meeting_id = ?1",
         params![meeting_id],
@@ -200,7 +212,9 @@ pub fn save_note(
     meeting_id: String,
     content: String,
 ) -> Result<(), MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
     let id = uuid::Uuid::new_v4().to_string();
     let now = chrono::Utc::now().timestamp_millis();
     conn.execute(
@@ -218,23 +232,29 @@ pub fn export_meeting_markdown(
     db: State<'_, DbPool>,
     meeting_id: String,
 ) -> Result<String, MeetflowError> {
-    let conn = db.0.lock().map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
+    let conn =
+        db.0.lock()
+            .map_err(|_| MeetflowError::Db("Lock poisoned".into()))?;
 
-    let meeting: Meeting = conn.query_row(
-        "SELECT id, title, started_at, ended_at, duration_sec, audio_path, language, created_at
+    let meeting: Meeting = conn
+        .query_row(
+            "SELECT id, title, started_at, ended_at, duration_sec, audio_path, language, created_at
          FROM meetings WHERE id = ?1",
-        params![meeting_id],
-        |row| Ok(Meeting {
-            id: row.get(0)?,
-            title: row.get(1)?,
-            started_at: row.get(2)?,
-            ended_at: row.get(3)?,
-            duration_sec: row.get(4)?,
-            audio_path: row.get(5)?,
-            language: row.get(6)?,
-            created_at: row.get(7)?,
-        }),
-    ).map_err(|_| MeetflowError::NotFound(format!("Meeting {meeting_id} not found")))?;
+            params![meeting_id],
+            |row| {
+                Ok(Meeting {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    started_at: row.get(2)?,
+                    ended_at: row.get(3)?,
+                    duration_sec: row.get(4)?,
+                    audio_path: row.get(5)?,
+                    language: row.get(6)?,
+                    created_at: row.get(7)?,
+                })
+            },
+        )
+        .map_err(|_| MeetflowError::NotFound(format!("Meeting {meeting_id} not found")))?;
 
     let mut md = format!(
         "# {}\n\n**Date:** {}\n**Duration:** {} min\n\n---\n\n",
@@ -249,7 +269,13 @@ pub fn export_meeting_markdown(
     let summary_result = conn.query_row(
         "SELECT executive_summary, action_items, topics FROM summaries WHERE meeting_id = ?1",
         params![meeting_id],
-        |row| Ok((row.get::<_, Option<String>>(0)?, row.get::<_, String>(1)?, row.get::<_, String>(2)?)),
+        |row| {
+            Ok((
+                row.get::<_, Option<String>>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        },
     );
 
     if let Ok((Some(exec), action_json, topics_json)) = summary_result {

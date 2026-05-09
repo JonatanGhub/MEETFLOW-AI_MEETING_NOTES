@@ -7,8 +7,6 @@ import {
   Shield,
   Zap,
   WifiOff,
-  Mic,
-  Monitor,
   Download,
   CheckCircle2,
   XCircle,
@@ -30,7 +28,6 @@ import { useAppStore } from "@/store/app-store";
 import {
   listWhisperModels,
   downloadWhisperModel,
-  getDownloadedModels,
   testLlmConnection,
   listOllamaModels,
   setSetting,
@@ -118,7 +115,7 @@ function StepModel({ onNext, onBack }: { onNext: () => void; onBack: () => void 
   const [selected, setSelected] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
-  const [downloadState, setDownloadState] = useState<DownloadState>("idle");
+  const [, setDownloadState] = useState<DownloadState>("idle");
 
   useEffect(() => {
     listWhisperModels().then(setModels).catch(() => {});
@@ -484,7 +481,6 @@ function StepAiProvider({ onNext, onBack }: { onNext: () => void; onBack: () => 
 // ─── Onboarding shell ─────────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
-  const t = useTranslations("onboarding");
   const router = useRouter();
   const { setOnboardingComplete } = useAppStore();
   const [step, setStep] = useState(1);

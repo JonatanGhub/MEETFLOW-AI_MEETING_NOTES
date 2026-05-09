@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
-  Pencil,
   Trash2,
   Download,
   Loader2,

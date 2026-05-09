@@ -34,9 +34,14 @@ impl CaptureStream {
         );
 
         let stream = build_input_stream(&device, &config, buffer)?;
-        stream.play().map_err(|e| MeetflowError::Audio(e.to_string()))?;
+        stream
+            .play()
+            .map_err(|e| MeetflowError::Audio(e.to_string()))?;
 
-        Ok(CaptureStream { _stream: stream, config })
+        Ok(CaptureStream {
+            _stream: stream,
+            config,
+        })
     }
 }
 
@@ -90,7 +95,9 @@ fn build_input_stream(
                 .map_err(|e| MeetflowError::Audio(e.to_string()))?
         }
         fmt => {
-            return Err(MeetflowError::Audio(format!("Unsupported sample format: {fmt:?}")));
+            return Err(MeetflowError::Audio(format!(
+                "Unsupported sample format: {fmt:?}"
+            )));
         }
     };
 

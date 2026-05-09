@@ -60,7 +60,8 @@ pub const MODEL_CATALOG: &[ModelCatalogEntry] = &[
         accuracy: "best",
         speed: "medium",
         badge: Some("best_value"),
-        hf_url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin",
+        hf_url:
+            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin",
         sha256: "1c3b4e5f6a7b8c9d",
     },
 ];
