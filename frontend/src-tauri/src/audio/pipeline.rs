@@ -21,6 +21,10 @@ pub struct RecordingState {
     #[allow(dead_code)]
     pub audio_path: PathBuf,
     pub is_paused: bool,
+    /// Wall-clock instant when the current pause began (None if not paused).
+    pub paused_at: Option<Instant>,
+    /// Total seconds already spent paused (from completed pause spans).
+    pub total_paused_secs: u64,
 }
 
 /// Commands sent to the pipeline worker.
@@ -42,10 +46,15 @@ pub struct RecordingHandle {
 }
 
 impl RecordingHandle {
+    /// Active recording duration in seconds, excluding time spent paused.
     pub fn elapsed_seconds(&self) -> u64 {
         self.state
             .lock()
-            .map(|s| s.started_at.elapsed().as_secs())
+            .map(|s| {
+                let wall = s.started_at.elapsed().as_secs();
+                let current_pause = s.paused_at.map(|p| p.elapsed().as_secs()).unwrap_or(0);
+                wall.saturating_sub(s.total_paused_secs + current_pause)
+            })
             .unwrap_or(0)
     }
 }
@@ -68,6 +77,8 @@ impl RecordingPipeline {
             started_at: Instant::now(),
             audio_path: audio_path.clone(),
             is_paused: false,
+            paused_at: None,
+            total_paused_secs: 0,
         }));
 
         // cpal Stream is !Send, so we use std::sync::mpsc and a std thread
@@ -113,12 +124,20 @@ impl RecordingPipeline {
                     match cmd {
                         PipelineCommand::Pause => {
                             if let Ok(mut s) = state_clone.lock() {
-                                s.is_paused = true;
+                                if !s.is_paused {
+                                    s.is_paused = true;
+                                    s.paused_at = Some(Instant::now());
+                                }
                             }
                         }
                         PipelineCommand::Resume => {
                             if let Ok(mut s) = state_clone.lock() {
-                                s.is_paused = false;
+                                if s.is_paused {
+                                    if let Some(paused_at) = s.paused_at.take() {
+                                        s.total_paused_secs += paused_at.elapsed().as_secs();
+                                    }
+                                    s.is_paused = false;
+                                }
                             }
                         }
                         PipelineCommand::Stop => break,
