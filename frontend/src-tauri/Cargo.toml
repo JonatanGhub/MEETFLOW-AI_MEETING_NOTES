@@ -55,6 +55,9 @@ hex     = "0.4"
 bytes   = "1"
 futures = "0.3"
 
+# Whisper transcription (wraps whisper.cpp — builds from source, requires CMake + MSVC + LLVM)
+whisper-rs = "0.16"
+
 [features]
 # Required by Tauri for production builds. DO NOT REMOVE.
 custom-protocol = ["tauri/custom-protocol"]

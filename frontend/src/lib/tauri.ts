@@ -238,6 +238,9 @@ export const downloadWhisperModel = (modelId: string): Promise<string> =>
 export const cancelWhisperDownload = (modelId: string): Promise<void> =>
   invoke("cancel_whisper_download", { modelId });
 
+export const transcribeMeeting = (meetingId: string): Promise<void> =>
+  invoke("transcribe_meeting", { meetingId });
+
 // ─── LLM commands ────────────────────────────────────────────────────────────
 
 export const testLlmConnection = (config: LlmConfig): Promise<void> =>

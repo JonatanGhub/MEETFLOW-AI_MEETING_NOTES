@@ -39,7 +39,11 @@ import {
   useUpdateMeetingTitle,
   useGenerateSummary,
   useExportMarkdown,
+  useTranscribeMeeting,
 } from "@/hooks/useMeetings";
+import { listen } from "@tauri-apps/api/event";
+import { useQueryClient } from "@tanstack/react-query";
+import { meetingKeys } from "@/hooks/useMeetings";
 import { getSetting } from "@/lib/tauri";
 import type { LlmConfig, LlmProvider } from "@/lib/tauri";
 
@@ -263,6 +267,29 @@ function NotesTab({ meetingId }: { meetingId: string }) {
 
 function TranscriptTab({ meetingId }: { meetingId: string }) {
   const { data: transcript, isLoading } = useTranscript(meetingId);
+  const transcribe = useTranscribeMeeting(meetingId);
+  const qc = useQueryClient();
+
+  // Auto-start transcription when we detect an empty transcript row.
+  // Only fires once (when isPending is false and content is empty).
+  React.useEffect(() => {
+    if (!isLoading && transcript && !transcript.content && !transcribe.isPending) {
+      transcribe.mutate();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, transcript?.content]);
+
+  // Listen for the Rust-emitted event so the tab refreshes as soon as
+  // transcription finishes, even if the user stays on this tab.
+  React.useEffect(() => {
+    const unlisten = listen<string>("transcript-ready", (ev) => {
+      if (ev.payload === meetingId) {
+        qc.invalidateQueries({ queryKey: meetingKeys.transcript(meetingId) });
+        qc.invalidateQueries({ queryKey: meetingKeys.detail(meetingId) });
+      }
+    });
+    return () => { unlisten.then((f) => f()); };
+  }, [meetingId, qc]);
 
   if (isLoading) {
     return (
@@ -275,24 +302,52 @@ function TranscriptTab({ meetingId }: { meetingId: string }) {
   if (!transcript) {
     return (
       <p className="text-sm text-[var(--text-tertiary)]">
-        No transcript available. Transcription runs after you stop recording.
+        No transcript found. Record and stop a meeting to generate one.
       </p>
     );
   }
 
+  // Empty transcript = transcription in progress (auto-started above) or failed
   if (!transcript.content) {
+    if (transcribe.isError) {
+      const msg = String(transcribe.error);
+      const noModel = msg.toLowerCase().includes("no whisper model");
+      return (
+        <div className="flex flex-col items-center gap-3 py-10 text-center">
+          <div className="w-10 h-10 rounded-xl bg-[var(--error)]/10 flex items-center justify-center">
+            <Loader2 className="w-5 h-5 text-[var(--error)]" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-[var(--text-secondary)]">
+              {noModel ? "No Whisper model downloaded" : "Transcription failed"}
+            </p>
+            <p className="text-xs text-[var(--text-tertiary)] mt-1 max-w-xs">
+              {noModel
+                ? "Go to Onboarding → Model step to download a Whisper model."
+                : msg}
+            </p>
+          </div>
+          {!noModel && (
+            <button
+              onClick={() => transcribe.mutate()}
+              className="text-xs text-[var(--accent)] hover:underline"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center">
         <div className="w-10 h-10 rounded-xl bg-[var(--bg-elevated)] flex items-center justify-center">
-          <Loader2 className="w-5 h-5 text-[var(--text-tertiary)]" />
+          <Loader2 className="w-5 h-5 text-[var(--accent)] animate-spin" />
         </div>
         <div>
-          <p className="text-sm font-medium text-[var(--text-secondary)]">
-            Transcription not yet available
-          </p>
-          <p className="text-xs text-[var(--text-tertiary)] mt-1 max-w-xs">
-            Local Whisper integration is coming in v0.2.{" "}
-            Audio is saved — the file will be transcribed automatically on upgrade.
+          <p className="text-sm font-medium text-[var(--text-secondary)]">Transcribing…</p>
+          <p className="text-xs text-[var(--text-tertiary)] mt-1">
+            Whisper is processing your audio locally. This may take a minute.
           </p>
         </div>
       </div>

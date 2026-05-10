@@ -13,6 +13,7 @@ import {
   updateMeetingTitle,
   exportMeetingMarkdown,
   generateMeetingSummary,
+  transcribeMeeting,
   type LlmConfig,
 } from "@/lib/tauri";
 
@@ -134,6 +135,17 @@ export function useGenerateSummary(meetingId: string) {
     },
     onError: (err) => {
       toast.error(`Failed to generate summary: ${err}`);
+    },
+  });
+}
+
+export function useTranscribeMeeting(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => transcribeMeeting(meetingId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: meetingKeys.transcript(meetingId) });
+      qc.invalidateQueries({ queryKey: meetingKeys.detail(meetingId) });
     },
   });
 }

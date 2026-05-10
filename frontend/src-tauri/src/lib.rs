@@ -70,11 +70,12 @@ pub fn run() {
             commands::settings::set_setting,
             commands::settings::get_app_data_dir,
             commands::settings::delete_all_data,
-            // Whisper models
+            // Whisper models + transcription
             commands::whisper::list_whisper_models,
             commands::whisper::get_downloaded_models,
             commands::whisper::download_whisper_model,
             commands::whisper::cancel_whisper_download,
+            commands::whisper::transcribe_meeting,
             // LLM
             commands::llm::test_llm_connection,
             commands::llm::generate_meeting_summary,
