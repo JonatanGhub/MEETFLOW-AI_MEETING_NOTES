@@ -1,23 +1,31 @@
 # MeetFlow — Project Status
 
-_Updated: 2026-05-09_
+_Updated: 2026-05-11_
 
 ## ⚡ SIGUIENTE ACCIÓN
 
-**Primera ejecución real del dev server:**
+**Probar flujo completo en `pnpm tauri dev`:**
 
 ```bash
 cd frontend
-pnpm tauri dev        # primera ejecución — abre la ventana Tauri
+pnpm tauri dev
 ```
 
-Estado del scaffold a 2026-05-09:
-- `cargo check` → ✅ 0 errores (23 warnings, todos de stubs)
+Flujo a probar:
+1. Onboarding → descargar modelo Whisper tiny/base
+2. Grabar reunión de prueba (~20s)
+3. Parar → ir a Meeting Detail
+4. Verificar que transcripción arranca automáticamente y se muestra
+5. Generar summary con Ollama (llama3.2) o Claude
+
+Estado a 2026-05-11:
+- `cargo check` → ✅ 0 errores (whisper-rs v0.16 + LLVM 22 + CMake 4.3)
 - `pnpm type-check` → ✅ 0 errores
 - `pnpm test` → ✅ 9/9 passing
+- Commit: `feat(whisper): full local transcription with whisper-rs v0.16`
 
-**Siguiente paso tras `pnpm tauri dev`:**
-Integrar `whisper-rs` real en `src/whisper/engine.rs` (actualmente stub).
+**Tras validar el flujo completo:**
+Playwright e2e básico + v0.1.0 tag → GitHub Release
 
 ## Hitos completados
 
@@ -37,7 +45,7 @@ Integrar `whisper-rs` real en `src/whisper/engine.rs` (actualmente stub).
   - [x] `error.rs` — MeetflowError enum + From impls
   - [x] `db/` — schema migrations + models
   - [x] `audio/` — capture (cpal WASAPI), pipeline (tokio), devices
-  - [x] `whisper/` — model catalog, download manager (SHA256), engine stub
+  - [x] `whisper/` — model catalog, download manager (SHA256), engine real (whisper-rs v0.16)
   - [x] `llm/` — providers, client (Ollama + Claude + OpenAI-compat), summary
   - [x] `commands/` — audio, meetings, settings, whisper, llm (25 commands)
   - [x] `lib.rs` — Tauri builder, DB init, state, invoke_handler
@@ -55,11 +63,10 @@ Integrar `whisper-rs` real en `src/whisper/engine.rs` (actualmente stub).
 
 ## Hitos pendientes (v0.1)
 
-1. **`pnpm tauri dev` — primera ejecución con ventana abierta** ← SIGUIENTE
-2. **whisper-rs real** en `engine.rs` — actualmente stub
-3. **Playwright e2e** config + tests básicos de onboarding + recording flow
-4. **cargo test** — añadir unit tests para LLM summary parser + DB helpers
-5. **v0.1.0 tag** → CI release build → NSIS installer en GitHub Releases
+1. **`pnpm tauri dev` — validar flujo completo record → transcript → summary** ← SIGUIENTE
+2. **Playwright e2e** config + tests básicos de onboarding + recording flow
+3. **cargo test** — añadir unit tests para LLM summary parser + DB helpers
+4. **v0.1.0 tag** → CI release build → NSIS installer en GitHub Releases
 
 ## Para v0.2
 
