@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─── Frontend: type check + lint + unit tests ─────────────────────────────
+  frontend:
+    name: Frontend (Next.js)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test -- --coverage
+
+  # ─── Rust: check + clippy + tests ────────────────────────────────────────
+  rust:
+    name: Rust (Tauri backend)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: frontend/src-tauri
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: frontend/src-tauri -> target
+
+      - name: cargo fmt check
+        run: cargo fmt --all -- --check
+
+      - name: Create dist placeholder (required by tauri::generate_context!)
+        run: New-Item -ItemType Directory -Force -Path dist
+        working-directory: ${{ github.workspace }}
+
+      - name: cargo check
+        run: cargo check --all-features
+
+      - name: cargo clippy
+        run: cargo clippy --all-features -- -D warnings
+
+      - name: cargo test
+        run: cargo test --all-features

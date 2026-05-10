@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(cargo *)",
+      "Bash(rustup *)",
+      "Bash(node *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git pull*)",
+      "Bash(gh *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cat *)",
+      "Bash(where *)",
+      "Bash(which *)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(rm -rf /*)",
+      "Bash(curl * | bash*)",
+      "Bash(curl * | sh*)",
+      "Bash(wget * | bash*)"
+    ]
+  },
+  "env": {
+    "PAPERCLIP_TELEMETRY_DISABLED": "1",
+    "DO_NOT_TRACK": "1"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const f=process.argv[1]||'';if(/\\.(ts|tsx|js|jsx|json|md|css)$/.test(f)){require('child_process').execSync('cd frontend && pnpm exec prettier --write \"'+f+'\" 2>/dev/null',{stdio:'ignore'})}\" \"${file}\""
+          }
+        ]
+      }
+    ]
+  }
+}
