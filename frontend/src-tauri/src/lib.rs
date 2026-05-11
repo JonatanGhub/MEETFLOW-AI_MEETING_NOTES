@@ -7,6 +7,7 @@ mod storage;
 mod whisper;
 
 use commands::audio::ActiveRecording;
+pub use commands::whisper::WhisperModelCache;
 
 /// Application entry point — called from `main.rs`.
 pub fn run() {
@@ -24,6 +25,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         // ── Managed state ─────────────────────────────────────────────────
         .manage(ActiveRecording(std::sync::Mutex::new(None)))
+        .manage(WhisperModelCache::new())
         // ── Setup: init DB + ensure storage dirs exist ────────────────────
         .setup(|app| {
             use tauri::Manager as _;

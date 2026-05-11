@@ -238,8 +238,11 @@ export const downloadWhisperModel = (modelId: string): Promise<string> =>
 export const cancelWhisperDownload = (modelId: string): Promise<void> =>
   invoke("cancel_whisper_download", { modelId });
 
-export const transcribeMeeting = (meetingId: string): Promise<void> =>
-  invoke("transcribe_meeting", { meetingId });
+export const transcribeMeeting = (
+  meetingId: string,
+  language?: string,
+): Promise<void> =>
+  invoke("transcribe_meeting", { meetingId, language: language ?? null });
 
 // ─── LLM commands ────────────────────────────────────────────────────────────
 

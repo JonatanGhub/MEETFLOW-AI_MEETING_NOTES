@@ -142,7 +142,7 @@ export function useGenerateSummary(meetingId: string) {
 export function useTranscribeMeeting(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => transcribeMeeting(meetingId),
+    mutationFn: (language?: string) => transcribeMeeting(meetingId, language),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: meetingKeys.transcript(meetingId) });
       qc.invalidateQueries({ queryKey: meetingKeys.detail(meetingId) });

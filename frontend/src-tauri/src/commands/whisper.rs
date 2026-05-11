@@ -1,12 +1,56 @@
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use tauri::{AppHandle, Emitter, State};
+use whisper_rs::WhisperContext;
 
 use crate::db::DbPool;
 use crate::error::MeetflowError;
 use crate::storage;
 use crate::whisper::{download, engine::WhisperEngine, ModelCatalogEntry, MODEL_CATALOG};
+
+// ─── Model cache ─────────────────────────────────────────────────────────────
+
+/// Caches the loaded WhisperContext so the model file is only read from disk
+/// once. Subsequent transcriptions skip the 1-10s model-load phase entirely.
+pub struct WhisperModelCache(pub Mutex<Option<(PathBuf, Arc<WhisperContext>)>>);
+
+impl WhisperModelCache {
+    pub fn new() -> Self {
+        Self(Mutex::new(None))
+    }
+
+    /// Return a context for `model_path`, loading from disk only if needed.
+    fn get_or_load(&self, model_path: &PathBuf) -> Result<Arc<WhisperContext>, MeetflowError> {
+        let mut guard = self
+            .0
+            .lock()
+            .map_err(|_| MeetflowError::Transcription("Model cache lock poisoned".into()))?;
+
+        if let Some((cached_path, ctx)) = &*guard {
+            if cached_path == model_path {
+                tracing::debug!("WhisperContext cache hit: {}", model_path.display());
+                return Ok(Arc::clone(ctx));
+            }
+        }
+
+        tracing::info!("Loading Whisper model from disk: {}", model_path.display());
+        let path_str = model_path.to_str().ok_or_else(|| {
+            MeetflowError::Transcription("Model path contains non-UTF-8 chars".into())
+        })?;
+        let ctx = Arc::new(
+            WhisperContext::new_with_params(
+                path_str,
+                whisper_rs::WhisperContextParameters::default(),
+            )
+            .map_err(|e| MeetflowError::Transcription(format!("Failed to load model: {e}")))?,
+        );
+        *guard = Some((model_path.clone(), Arc::clone(&ctx)));
+        Ok(ctx)
+    }
+}
+
+// ─── Commands ────────────────────────────────────────────────────────────────
 
 /// List all models in the catalog with their download status.
 #[derive(serde::Serialize)]
@@ -62,7 +106,7 @@ pub async fn download_whisper_model(
 
     let client = Arc::new(
         reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(600)) // 10 min for large models
+            .timeout(std::time::Duration::from_secs(600))
             .build()
             .map_err(|e| MeetflowError::Http(e.to_string()))?,
     );
@@ -71,9 +115,7 @@ pub async fn download_whisper_model(
     Ok(path.to_string_lossy().to_string())
 }
 
-/// Cancel an in-progress download.
-/// NOTE: Simple implementation — just deletes the partial file.
-/// A proper cancellation token will be added in a future phase.
+/// Cancel an in-progress download — deletes the partial file.
 #[tauri::command]
 pub async fn cancel_whisper_download(
     app: AppHandle,
@@ -91,20 +133,24 @@ pub async fn cancel_whisper_download(
     Ok(())
 }
 
-/// Transcribe a meeting's audio file using the first available Whisper model.
+/// Transcribe a meeting's audio file using the best available Whisper model.
 ///
-/// Called by the frontend when the meeting detail view opens with an empty
-/// transcript. Runs whisper.cpp on a blocking thread so Tokio stays free.
-/// Emits `transcript-ready` with the meeting ID when done.
+/// - `language`: optional BCP-47 code ("es", "en", …). Pass `null` for auto-detect.
+///
+/// The command returns immediately after kicking off work — the actual inference
+/// runs on a `spawn_blocking` thread so Tokio and the IPC layer stay responsive.
+/// The frontend receives a `transcript-ready` event when the transcript is ready.
 #[tauri::command]
 pub async fn transcribe_meeting(
     app: AppHandle,
     db: State<'_, DbPool>,
+    model_cache: State<'_, WhisperModelCache>,
     meeting_id: String,
+    language: Option<String>,
 ) -> Result<(), MeetflowError> {
     use rusqlite::OptionalExtension as _;
 
-    // ── 1. Load meeting info from DB ─────────────────────────────────────────
+    // ── 1. DB reads (fast, hold lock briefly) ────────────────────────────────
     let (audio_path, already_transcribed) = {
         let conn = db
             .0
@@ -134,35 +180,42 @@ pub async fn transcribe_meeting(
     };
 
     if already_transcribed {
-        tracing::info!("Meeting {meeting_id} already has a transcript, skipping");
+        tracing::info!("Meeting {meeting_id} already transcribed — skipping");
         return Ok(());
     }
 
     let audio_path = audio_path
         .ok_or_else(|| MeetflowError::NotFound("Meeting has no audio file".into()))?;
 
-    // ── 2. Find first downloaded model ───────────────────────────────────────
+    // ── 2. Resolve model path (async-safe fs check) ───────────────────────────
     let models_dir = storage::models_dir(&app)?;
     let model_path = find_first_downloaded_model(&models_dir)?;
 
-    // ── 3. Read WAV → Vec<f32> ───────────────────────────────────────────────
-    let samples = read_wav_samples(&audio_path)?;
+    // ── 3. Get cached context (loads from disk once, reuses forever after) ────
+    let ctx = model_cache.get_or_load(&model_path)?;
 
-    // ── 4. Transcribe on blocking thread ────────────────────────────────────
+    // ── 4. Heavy work on blocking thread pool (WAV read + inference) ─────────
     tracing::info!(
-        "Starting transcription for meeting {meeting_id} ({} samples, model: {})",
-        samples.len(),
-        model_path.display()
+        "Starting transcription for meeting {meeting_id} (model: {}, language: {})",
+        model_path.display(),
+        language.as_deref().unwrap_or("auto")
     );
 
+    let lang = language.clone();
     let result = tokio::task::spawn_blocking(move || {
-        WhisperEngine::transcribe_file(&model_path, &samples, None)
+        // Read WAV inside the blocking thread — no async executor pressure
+        let samples = read_wav_samples(&audio_path)?;
+        tracing::info!(
+            "WAV loaded: {} samples ({:.1}s)",
+            samples.len(),
+            samples.len() as f32 / 16_000.0
+        );
+        WhisperEngine::transcribe_with_ctx(&ctx, &samples, lang.as_deref())
     })
     .await
-    .map_err(|e| MeetflowError::Transcription(format!("Thread panicked: {e}")))?
-    ?;
+    .map_err(|e| MeetflowError::Transcription(format!("Thread panicked: {e}")))??;
 
-    // ── 5. Persist transcript ────────────────────────────────────────────────
+    // ── 5. Persist transcript ─────────────────────────────────────────────────
     let segments_json = serde_json::to_string(&result.segments)
         .map_err(|e| MeetflowError::Db(format!("Segment serialization failed: {e}")))?;
     let word_count = result.text.split_whitespace().count() as i64;
@@ -185,7 +238,7 @@ pub async fn transcribe_meeting(
         )?;
     }
 
-    // ── 6. Notify frontend ───────────────────────────────────────────────────
+    // ── 6. Notify frontend ────────────────────────────────────────────────────
     app.emit("transcript-ready", &meeting_id).ok();
     tracing::info!("Transcription complete for meeting {meeting_id}");
     Ok(())
@@ -193,7 +246,6 @@ pub async fn transcribe_meeting(
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/// Return the path of the first downloaded model in catalog priority order.
 fn find_first_downloaded_model(models_dir: &PathBuf) -> Result<PathBuf, MeetflowError> {
     for entry in MODEL_CATALOG {
         let path = models_dir.join(format!("ggml-{}.bin", entry.id));
@@ -207,11 +259,6 @@ fn find_first_downloaded_model(models_dir: &PathBuf) -> Result<PathBuf, Meetflow
     ))
 }
 
-/// Read a WAV file (any sample rate, mono or stereo, i16 or f32) and return
-/// 16 kHz mono f32 samples ready for Whisper.
-///
-/// The recording pipeline already writes 16 kHz mono i16, so in practice no
-/// resampling is needed. The function still handles other formats defensively.
 fn read_wav_samples(path: &str) -> Result<Vec<f32>, MeetflowError> {
     let mut reader = hound::WavReader::open(path)
         .map_err(|e| MeetflowError::Storage(format!("Cannot open WAV '{path}': {e}")))?;
@@ -244,7 +291,7 @@ fn read_wav_samples(path: &str) -> Result<Vec<f32>, MeetflowError> {
     };
 
     tracing::debug!(
-        "WAV loaded: {} samples, {}Hz, {}ch",
+        "WAV spec: {} samples, {}Hz, {}ch",
         samples.len(),
         spec.sample_rate,
         spec.channels

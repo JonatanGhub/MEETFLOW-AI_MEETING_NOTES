@@ -1,6 +1,6 @@
-use std::path::PathBuf;
+use std::sync::Arc;
 
-use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
+use whisper_rs::{FullParams, SamplingStrategy, WhisperContext};
 
 use crate::db::models::TranscriptSegment;
 use crate::error::MeetflowError;
@@ -8,35 +8,22 @@ use crate::error::MeetflowError;
 pub struct WhisperEngine;
 
 impl WhisperEngine {
-    /// Transcribe 16 kHz mono f32 samples using the given ggml model file.
+    /// Transcribe using a pre-loaded `WhisperContext` (preferred — no disk I/O).
     ///
-    /// This function is CPU-intensive and blocks the calling thread.
-    /// Always call it via `tokio::task::spawn_blocking`.
-    pub fn transcribe_file(
-        model_path: &PathBuf,
+    /// Always call from `tokio::task::spawn_blocking` — this is CPU-intensive.
+    pub fn transcribe_with_ctx(
+        ctx: &Arc<WhisperContext>,
         samples: &[f32],
         language: Option<&str>,
     ) -> Result<TranscribeResult, MeetflowError> {
-        if !model_path.exists() {
-            return Err(MeetflowError::Transcription(format!(
-                "Model not found: {}",
-                model_path.display()
-            )));
-        }
+        Self::run_inference(ctx, samples, language)
+    }
 
-        let path_str = model_path.to_str().ok_or_else(|| {
-            MeetflowError::Transcription("Model path contains non-UTF-8 characters".into())
-        })?;
-
-        tracing::info!(
-            "Loading whisper model ({:.0} MB): {}",
-            model_path.metadata().map(|m| m.len() / 1_048_576).unwrap_or(0),
-            path_str
-        );
-
-        let ctx = WhisperContext::new_with_params(path_str, WhisperContextParameters::default())
-            .map_err(|e| MeetflowError::Transcription(format!("Failed to load model: {e}")))?;
-
+    fn run_inference(
+        ctx: &Arc<WhisperContext>,
+        samples: &[f32],
+        language: Option<&str>,
+    ) -> Result<TranscribeResult, MeetflowError> {
         let mut state = ctx
             .create_state()
             .map_err(|e| MeetflowError::Transcription(format!("Failed to create state: {e}")))?;
@@ -55,9 +42,10 @@ impl WhisperEngine {
         params.set_single_segment(false);
 
         tracing::info!(
-            "Transcribing {:.1}s of audio with {} threads…",
+            "Transcribing {:.1}s of audio with {} threads (language: {})…",
             samples.len() as f32 / 16_000.0,
-            n_threads
+            n_threads,
+            language.unwrap_or("auto")
         );
 
         state
@@ -65,7 +53,6 @@ impl WhisperEngine {
             .map_err(|e| MeetflowError::Transcription(format!("Transcription failed: {e}")))?;
 
         let n_segments = state.full_n_segments();
-
         let mut full_text = String::new();
         let mut segments: Vec<TranscriptSegment> = Vec::with_capacity(n_segments as usize);
 
@@ -81,7 +68,7 @@ impl WhisperEngine {
                 continue;
             }
 
-            // Whisper timestamps are in centiseconds (1/100 s)
+            // Whisper timestamps are centiseconds (1/100 s)
             let t0 = seg.start_timestamp() as f64 / 100.0;
             let t1 = seg.end_timestamp() as f64 / 100.0;
 
@@ -98,6 +85,7 @@ impl WhisperEngine {
             });
         }
 
+        let detected_lang = language.unwrap_or("auto").to_string();
         tracing::info!(
             "Transcription done: {} segments, {} chars",
             segments.len(),
@@ -107,7 +95,7 @@ impl WhisperEngine {
         Ok(TranscribeResult {
             text: full_text,
             segments,
-            language: language.unwrap_or("auto").to_string(),
+            language: detected_lang,
         })
     }
 }

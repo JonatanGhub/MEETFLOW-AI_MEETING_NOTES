@@ -274,7 +274,7 @@ function TranscriptTab({ meetingId }: { meetingId: string }) {
   // Only fires once (when isPending is false and content is empty).
   React.useEffect(() => {
     if (!isLoading && transcript && !transcript.content && !transcribe.isPending) {
-      transcribe.mutate();
+      transcribe.mutate(undefined);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, transcript?.content]);
@@ -329,7 +329,7 @@ function TranscriptTab({ meetingId }: { meetingId: string }) {
           </div>
           {!noModel && (
             <button
-              onClick={() => transcribe.mutate()}
+              onClick={() => transcribe.mutate(undefined)}
               className="text-xs text-[var(--accent)] hover:underline"
             >
               Retry
@@ -340,16 +340,20 @@ function TranscriptTab({ meetingId }: { meetingId: string }) {
     }
 
     return (
-      <div className="flex flex-col items-center gap-3 py-10 text-center">
-        <div className="w-10 h-10 rounded-xl bg-[var(--bg-elevated)] flex items-center justify-center">
-          <Loader2 className="w-5 h-5 text-[var(--accent)] animate-spin" />
+      <div className="flex flex-col items-center gap-4 py-12 text-center px-6">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--bg-elevated)] flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-[var(--accent)] animate-spin" />
         </div>
-        <div>
+        <div className="space-y-1">
           <p className="text-sm font-medium text-[var(--text-secondary)]">Transcribing…</p>
-          <p className="text-xs text-[var(--text-tertiary)] mt-1">
-            Whisper is processing your audio locally. This may take a minute.
+          <p className="text-xs text-[var(--text-tertiary)] max-w-xs leading-relaxed">
+            Whisper is processing your audio locally.
+            The first run loads the model (~10 s); subsequent ones are faster.
           </p>
         </div>
+        <p className="text-xs text-[var(--text-tertiary)] bg-[var(--bg-elevated)] px-3 py-1.5 rounded-lg">
+          You can navigate freely — transcription continues in the background.
+        </p>
       </div>
     );
   }
